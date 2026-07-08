@@ -14,6 +14,6 @@ git reset origin/main --hard
 uv sync
 
 tmux new-session -d -s "$SESSION_NAME" \
-  "cd $PROJECT_DIR && uv run flask run --host 0.0.0.0 --port 5050"
+  "cd $PROJECT_DIR && uv run flask run --host 0.0.0.0 --port 5000"
 
 echo "Redeploy complete. Session '$SESSION_NAME' is running."

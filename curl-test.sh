@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-URL="http://localhost:5050/api/timeline_post"
+URL="http://localhost:5000/api/timeline_post"
 CONTENT="test post $RANDOM"
 
 echo "POST: creating timeline post..."
