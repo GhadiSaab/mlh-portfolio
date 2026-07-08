@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile">
+    <h1>{{ title }}</h1>
+</div>
+
+<section class="section">
+    <form id="timeline-form" class="timeline-form">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <textarea name="content" placeholder="What's on your mind?" required></textarea>
+        <button type="submit">Post</button>
+    </form>
+
+    <div id="timeline-posts"></div>
+</section>
+
+<script>
+    async function gravatarUrl(email) {
+        const normalized = email.trim().toLowerCase();
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));
+        const hash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+        return `https://www.gravatar.com/avatar/${hash}?d=identicon`;
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    async function renderPost(post) {
+        const article = document.createElement('article');
+        article.className = 'entry-card timeline-card';
+        article.innerHTML = `
+            <div class="timeline-header">
+                <img class="timeline-avatar" src="${await gravatarUrl(post.email)}" alt="${escapeHtml(post.name)}">
+                <div>
+                    <h4 class="entry-title">${escapeHtml(post.name)}</h4>
+                    <span class="entry-dates">${new Date(post.created_at).toLocaleString()}</span>
+                </div>
+            </div>
+            <p>${escapeHtml(post.content)}</p>
+        `;
+        return article;
+    }
+
+    async function loadPosts() {
+        const response = await fetch('/api/timeline_post');
+        const posts = await response.json();
+        const container = document.getElementById('timeline-posts');
+        container.innerHTML = '';
+        for (const post of posts) {
+            container.appendChild(await renderPost(post));
+        }
+    }
+
+    document.getElementById('timeline-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        await fetch('/api/timeline_post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: form.name.value,
+                email: form.email.value,
+                content: form.content.value,
+            }),
+        });
+        form.reset();
+        loadPosts();
+    });
+
+    loadPosts();
+</script>
+{% endblock %}

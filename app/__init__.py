@@ -41,7 +41,11 @@ def _db_close(exc):
         mydb.close()
 
 # Pages shown in the nav bar
-PAGES = [{"name": "Home", "url": "/"}, {"name": "Hobbies", "url": "/hobbies"}]
+PAGES = [
+    {"name": "Home", "url": "/"},
+    {"name": "Hobbies", "url": "/hobbies"},
+    {"name": "Timeline", "url": "/timeline"},
+]
 
 # Placeholders
 ABOUT = [
@@ -196,6 +200,16 @@ def hobbies():
         pages=PAGES,
         hobbies=HOBBIES,
         travel=TRAVEL,
+    )
+
+
+@app.route("/timeline")
+def timeline():
+    return render_template(
+        "timeline.html",
+        title="Timeline",
+        url=os.getenv("URL"),
+        pages=PAGES,
     )
 
 

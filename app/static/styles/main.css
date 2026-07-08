@@ -250,3 +250,63 @@ body {
         height: 300px;
     }
 }
+
+/* Timeline */
+.timeline-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.timeline-form input,
+.timeline-form textarea {
+    font-family: "Roboto", serif;
+    font-size: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.timeline-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.timeline-form button {
+    align-self: flex-start;
+    background-color: #1C539F;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.timeline-form button:hover {
+    background-color: #164280;
+}
+
+.timeline-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.timeline-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
