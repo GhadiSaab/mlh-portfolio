@@ -1,9 +1,44 @@
+import datetime
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
+from peewee import MySQLDatabase, Model, CharField, TextField, DateTimeField
+from playhouse.shortcuts import model_to_dict
 
 load_dotenv()
 app = Flask(__name__)
+
+mydb = MySQLDatabase(os.getenv('MYSQL_DATABASE'),
+        user=os.getenv('MYSQL_USER'),
+        password=os.getenv('MYSQL_PASSWORD'),
+        host=os.getenv('MYSQL_HOST'),
+        port=3306
+)
+
+
+class TimelinePost(Model):
+    name = CharField()
+    email = CharField()
+    content = TextField()
+    created_at = DateTimeField(default=datetime.datetime.now)
+
+    class Meta:
+        database = mydb
+
+
+with mydb:
+    mydb.create_tables([TimelinePost])
+
+
+@app.before_request
+def _db_connect():
+    mydb.connect(reuse_if_open=True)
+
+
+@app.teardown_request
+def _db_close(exc):
+    if not mydb.is_closed():
+        mydb.close()
 
 # Pages shown in the nav bar
 PAGES = [{"name": "Home", "url": "/"}, {"name": "Hobbies", "url": "/hobbies"}]
@@ -162,3 +197,20 @@ def hobbies():
         hobbies=HOBBIES,
         travel=TRAVEL,
     )
+
+
+@app.route("/api/timeline_post", methods=["POST"])
+def create_timeline_post():
+    data = request.get_json()
+    post = TimelinePost.create(
+        name=data["name"],
+        email=data["email"],
+        content=data["content"],
+    )
+    return jsonify(model_to_dict(post)), 201
+
+
+@app.route("/api/timeline_post", methods=["GET"])
+def get_timeline_posts():
+    posts = TimelinePost.select().order_by(TimelinePost.created_at.desc())
+    return jsonify([model_to_dict(post) for post in posts])
