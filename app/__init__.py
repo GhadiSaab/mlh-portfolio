@@ -214,3 +214,12 @@ def create_timeline_post():
 def get_timeline_posts():
     posts = TimelinePost.select().order_by(TimelinePost.created_at.desc())
     return jsonify([model_to_dict(post) for post in posts])
+
+
+@app.route("/api/timeline_post/<int:post_id>", methods=["DELETE"])
+def delete_timeline_post(post_id):
+    post = TimelinePost.get_or_none(TimelinePost.id == post_id)
+    if post is None:
+        return jsonify({"error": "not found"}), 404
+    post.delete_instance()
+    return "", 204
