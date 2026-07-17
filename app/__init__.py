@@ -2,18 +2,32 @@ import datetime
 import os
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
-from peewee import MySQLDatabase, Model, CharField, TextField, DateTimeField
+from peewee import (
+    MySQLDatabase,
+    SqliteDatabase,
+    Model,
+    CharField,
+    TextField,
+    DateTimeField,
+)
 from playhouse.shortcuts import model_to_dict
 
 load_dotenv()
 app = Flask(__name__)
 
-mydb = MySQLDatabase(os.getenv('MYSQL_DATABASE'),
-        user=os.getenv('MYSQL_USER'),
-        password=os.getenv('MYSQL_PASSWORD'),
-        host=os.getenv('MYSQL_HOST'),
-        port=3306
-)
+if os.getenv("TESTING") == "true":
+    print("Running in test mode")
+    # File-backed rather than :memory. the app closes its connection after every
+    # request and an in-memory db is dropped once its last connection closes.
+    mydb = SqliteDatabase("test.sqlite")
+else:
+    mydb = MySQLDatabase(
+        os.getenv("MYSQL_DATABASE"),
+        user=os.getenv("MYSQL_USER"),
+        password=os.getenv("MYSQL_PASSWORD"),
+        host=os.getenv("MYSQL_HOST"),
+        port=3306,
+    )
 
 
 class TimelinePost(Model):
