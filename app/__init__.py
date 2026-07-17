@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from peewee import (
@@ -227,14 +228,25 @@ def timeline():
     )
 
 
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
 @app.route("/api/timeline_post", methods=["POST"])
 def create_timeline_post():
-    data = request.get_json()
-    post = TimelinePost.create(
-        name=data["name"],
-        email=data["email"],
-        content=data["content"],
-    )
+    # The timeline page posts JSON; form-encoded bodies are accepted too.
+    data = request.get_json(silent=True) or request.form
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip()
+    content = (data.get("content") or "").strip()
+
+    if not name:
+        return jsonify({"error": "Invalid name"}), 400
+    if not content:
+        return jsonify({"error": "Invalid content"}), 400
+    if not EMAIL_RE.match(email):
+        return jsonify({"error": "Invalid email"}), 400
+
+    post = TimelinePost.create(name=name, email=email, content=content)
     return jsonify(model_to_dict(post)), 201
 
 

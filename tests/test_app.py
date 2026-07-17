@@ -33,18 +33,18 @@ class AppTestCase(unittest.TestCase):
         html = response.get_data(as_text=True)
         assert "<title>MLH Fellows</title>" in html
 
-        # Every person in the about section is rendered
+        # Every person in the about section is rendered.
         assert "Andrei" in html
         assert "Ghadi" in html
         assert "Computer Science student at University College Cork" in html
 
-        # Work experience and education entries reach the page
+        # Work experience and education entries reach the page.
         assert "Claude Soc&#39;s Tutor" in html
         assert "Genvia" in html
         assert "BSc Computer Science" in html
         assert "M.Eng Devops Engineering" in html
 
-        # Nav bar links to every page
+        # Nav bar links to every page.
         assert 'href="/hobbies"' in html
         assert 'href="/timeline"' in html
 
@@ -53,13 +53,13 @@ class AppTestCase(unittest.TestCase):
         assert response.status_code == 200
         html = response.get_data(as_text=True)
         assert "<title>Timeline</title>" in html
-        # The page ships the form and the container the posts render into
+        # The page ships the form and the container the posts render into.
         assert 'id="timeline-form"' in html
         assert 'id="timeline-posts"' in html
 
     def test_timeline(self):
         # Empty to start. The API returns a bare JSON array, which is what
-        # timeline.html iterates
+        # timeline.html iterates.
         response = self.client.get("/api/timeline_post")
         assert response.status_code == 200
         assert response.is_json
@@ -79,11 +79,33 @@ class AppTestCase(unittest.TestCase):
         assert posts_by_name["John Doe"]["content"] == "Hello world!"
         assert posts_by_name["Jane Doe"]["content"] == "Hi from Jane!"
 
-        # DELETE removes only the post asked for
+        # DELETE removes only the post asked for.
         assert self.client.delete(f"/api/timeline_post/{post_id}").status_code == 204
         posts = self.client.get("/api/timeline_post").get_json()
         assert len(posts) == 1
         assert posts[0]["name"] == "Jane Doe"
+
+    def test_malformed_timeline_post(self):
+        # POST request missing name
+        response = self.client.post("/api/timeline_post", data=
+{"email": "john@example.com", "content": "Hello world, I'm John!"})
+        assert response.status_code == 400
+        html = response.get_data(as_text=True)
+        assert "Invalid name" in html
+
+        # POST request with empty content
+        response = self.client.post("/api/timeline_post", data=
+{"name": "John Doe", "email": "john@example.com", "content": ""})
+        assert response.status_code == 400
+        html = response.get_data(as_text=True)
+        assert "Invalid content" in html
+
+        # POST request with malformed email
+        response = self.client.post("/api/timeline_post", data=
+{"name": "John Doe", "email": "not-an-email", "content": "Hello world, I'm John!"})
+        assert response.status_code == 400
+        html = response.get_data(as_text=True)
+        assert "Invalid email" in html
 
 
 if __name__ == "__main__":
