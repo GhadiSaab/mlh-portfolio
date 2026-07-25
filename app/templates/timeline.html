@@ -13,6 +13,8 @@
         <button type="submit">Post</button>
     </form>
 
+    <p id="timeline-error" style="display: none; color: #c0392b;"></p>
+
     <div id="timeline-posts"></div>
 </section>
 
@@ -28,6 +30,17 @@
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    }
+
+    function showError(message) {
+        const errorEl = document.getElementById('timeline-error');
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+    }
+
+    function clearError() {
+        const errorEl = document.getElementById('timeline-error');
+        errorEl.style.display = 'none';
     }
 
     async function renderPost(post) {
@@ -59,7 +72,7 @@
     document.getElementById('timeline-form').addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = event.target;
-        await fetch('/api/timeline_post', {
+        const response = await fetch('/api/timeline_post', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -68,6 +81,18 @@
                 content: form.content.value,
             }),
         });
+
+        if (response.status === 429) {
+            showError("You're posting too quickly. Please wait a minute and try again.");
+            return;
+        }
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            showError(data.error || 'Something went wrong while posting.');
+            return;
+        }
+
+        clearError();
         form.reset();
         loadPosts();
     });
