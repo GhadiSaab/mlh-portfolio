@@ -1,0 +1,33 @@
+services:
+  myportfolio:
+    container_name: myportfolio
+    build: .
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=development
+      - URL=localhost:5000
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=myportfolio
+      - MYSQL_PASSWORD=mypassword
+      - MYSQL_DATABASE=myportfoliodb
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/APP
+    depends_on:
+      - mysql
+
+  mysql:
+    container_name: mysql
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=xakReQSfNsYpDSrYC5UlBNXk
+      - MYSQL_DATABASE=myportfoliodb
+      - MYSQL_USER=myportfolio
+      - MYSQL_PASSWORD=mypassword
+    volumes:
+      - mydatabase:/var/lib/mysql
+
+volumes:
+  mydatabase:
