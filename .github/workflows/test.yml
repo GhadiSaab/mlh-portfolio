@@ -1,16 +1,21 @@
-name: Tests
+name: Run Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    name: Run Tests
+    env:
+      TESTING: true
     steps:
-      - name: Check out repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Install uv
@@ -18,11 +23,11 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Set up Python
+      - name: Setup Python
         run: uv python install
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: uv sync --locked
 
-      - name: Run tests
-        run: uv run python -m unittest discover -s tests -v
+      - name: Run Tests
+        run: ./run_test.sh
