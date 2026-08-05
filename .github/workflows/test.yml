@@ -1,0 +1,33 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    env:
+      TESTING: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Setup Python
+        run: uv python install
+
+      - name: Install Dependencies
+        run: uv sync --locked
+
+      - name: Run Tests
+        run: ./run_test.sh
