@@ -6,7 +6,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    env:
+      TESTING: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Setup Python
+        run: uv python install
+
+      - name: Install Dependencies
+        run: uv sync --locked
+
+      - name: Run Tests
+        run: ./run_test.sh
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
@@ -24,3 +48,17 @@ jobs:
 
       - name: Deploy site
         run: ssh my-vps "cd ${{ secrets.PROJECT_ROOT }} && ~/redeploy-site.sh"
+
+      - name: Print container status
+        run: ssh my-vps "cd ${{ secrets.PROJECT_ROOT }} && docker compose -f docker-compose.prod.yml ps"
+
+      - name: Notify Discord on success
+        run: curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" -d "content=🚀 Deployment Successful"
+
+  notify-failure:
+    needs: [test, deploy]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord on failure
+        run: curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" -d "content=🚨 Deployment Failed"
